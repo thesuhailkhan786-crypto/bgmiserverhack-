@@ -1,0 +1,29 @@
+name: Build APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build
+        run: |
+          npm install -g @capacitor/cli
+          npm install @capacitor/core @capacitor/android
+          mkdir -p www
+          unzip index.zip -d www
+          npx cap init myapp com.bgmi.app --web-dir=www
+          npx cap add android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
